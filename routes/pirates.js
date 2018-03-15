@@ -2,19 +2,51 @@ var express = require('express');
 var router = express.Router();
 const common = require('../config/common');
 const mongo = require('../config/mongo');
-const ObjectId = require('mongodb').ObjectID;
 
-router.get('/', function(request, response, next) {
+var passport = require('passport'),
+    JwtStrategy = require('passport-jwt').Strategy,
+    ExtractJwt = require('passport-jwt').ExtractJwt;
+
+var opts = {
+  jwtFromRequest : ExtractJwt.fromAuthHeaderWithScheme('bearer'),
+  secretOrKey : 'secret-top-secret'
+}
+
+passport.use(new JwtStrategy(opts, (jwt_payload, done) => {
+  if(common.time() <= jwt_payload.exp) {
+    return done(null, {
+      status: true,
+      payload: jwt_payload
+    });
+  }
+  else {
+    err = {
+      message: "Unauthorized",
+      status: false
+    }
+    return done(false, false, err);
+  }
+}));
+
+
+router.get('/countPirates', passport.authenticate('jwt', { session: false }) ,(request, response) => {
+  response.json({
+    piratesFound: pirateCounter(),
+    token: request.user.jwtData
+  });
+});
+
+router.get('/', (request, response, next) => {
   mongo.connect((error, db)=> {
     if(error) throw error;
     let data = db.collection('pirates').find().toArray((err, documents) => {
       if(err) throw err;      
-      response.json(documents)
+      response.json(documents);
     });
   })
 });
 
-router.get('/:pirate_id/get', function(request, response, next) {
+router.get('/:pirate_id/get', (request, response, next) => {
   try {
     let pid = request.params.pirate_id;
     if(pid.length!==12 && pid.length!==24)  {
@@ -22,7 +54,7 @@ router.get('/:pirate_id/get', function(request, response, next) {
     }
     mongo.connect((error, db)=> {
       if(error) throw 'db error';
-      let data = db.collection('pirates').find(ObjectId(pid)).toArray((err, documents) => {
+      let data = db.collection('pirates').find(mongo.ObjectId(pid)).toArray((err, documents) => {
         if(err) throw 'something went wrong';
         try {
           if(!documents[0]) throw "record not found";
@@ -45,12 +77,12 @@ router.get('/:pirate_id/get', function(request, response, next) {
   }
 });
 
-router.get('/eila-first-task', (request, response, next) => {
+let pirateCounter = () => {
   let res=[];
   let count =0;
   let data = require("../config/data/eila").data;
   // let data = ("8) ;| ;-) 8~) ;( :> :} :] :0").split(' ');
-  common.msg(data)
+  // common.msg(data)
   data.forEach(e=>{
     try {
       let index = 0;
@@ -71,18 +103,17 @@ router.get('/eila-first-task', (request, response, next) => {
 
       if(e.charAt(index) === ")" || e.charAt(index) === "|" )  {
         count++;
-        common.msg(e);
+        // common.msg(e);
       }
       else 
         throw "smile error";
       
     } catch(err) {
-      common.msg(err)
+      // common.msg(err)
+      return err;
     }
   })
-  response.json({
-    count:count
-  })
-})
+  return count;
+}
 
 module.exports = router;

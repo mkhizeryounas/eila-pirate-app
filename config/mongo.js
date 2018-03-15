@@ -1,4 +1,5 @@
 var MongoClient = require('mongodb').MongoClient;
+const ObjectId = require('mongodb').ObjectID;
 
 module.exports = {
     connect: (cb) => {
@@ -7,5 +8,6 @@ module.exports = {
             const db = client.db("eila");
             cb(null, db);
         });
-    }
+    },
+    ObjectId: ObjectId
 }
