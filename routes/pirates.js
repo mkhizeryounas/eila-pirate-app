@@ -3,15 +3,22 @@ var router = express.Router();
 const common = require('../config/common');
 const mongo = require('../config/mongo');
 const locker = require('../config/locker');
-
-
+var http = require('request-promise');
 
 
 router.get('/countPirates', locker.unlock, (request, response) => {
-  response.json({
-    piratesFound: pirateCounter(),
-    // jwt_payload: request.user
-  });
+  http({
+    method: "GET",
+    uri: 'https://eila-pirate-api.herokuapp.com/pirates/prison',
+    headers: {}
+  }).then((res) => {
+    res = JSON.parse(res);
+    response.json({
+      piratesFound: pirateCounter(res.faces),
+      // jwt_payload: request.user
+    });
+  })
+  
 });
 
 
@@ -64,11 +71,11 @@ router.get('/:pirate_id/get', (request, response, next) => {
   }
 });
 
-let pirateCounter = () => {
+let pirateCounter = (data) => {
   let res=[];
   let count =0;
-  let data = require("../config/data/eila").data;
-  // let data = ("8) ;| ;-) 8~) ;( :> :} :] :0").split(' ');
+  // data = require("../config/data/eila").data;
+  // data = ("8) ;| ;-) 8~) ;( :> :} :] :0").split(' ');
   // common.msg(data)
   data.forEach(e=>{
     try {
