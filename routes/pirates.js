@@ -10,7 +10,7 @@ const locker = require('../config/locker');
 router.get('/countPirates', locker.unlock, (request, response) => {
   response.json({
     piratesFound: pirateCounter(),
-    jwt_payload: request.user
+    // jwt_payload: request.user
   });
 });
 
