@@ -9,10 +9,11 @@ var passport = require('passport'),
 
 var opts = {
   jwtFromRequest : ExtractJwt.fromAuthHeaderWithScheme('bearer'),
-  secretOrKey : 'secret-top-secret'
+  secretOrKey : 'secret-top-secret',
+  passReqToCallback : true
 }
 
-passport.use(new JwtStrategy(opts, (jwt_payload, done) => {
+passport.use(new JwtStrategy(opts, (req, jwt_payload, done) => {
   if(common.time() <= jwt_payload.exp) {
     return done(null, {
       status: true,
@@ -21,6 +22,7 @@ passport.use(new JwtStrategy(opts, (jwt_payload, done) => {
   }
   else {
     err = {
+      "successMessage": "OK",
       message: "Unauthorized",
       status: false
     }
@@ -29,10 +31,10 @@ passport.use(new JwtStrategy(opts, (jwt_payload, done) => {
 }));
 
 
-router.get('/countPirates', passport.authenticate('jwt', { session: false }) ,(request, response) => {
+router.get('/countPirates', passport.authenticate('jwt', { session: false, failureFlash: true}) ,(request, response) => {
   response.json({
     piratesFound: pirateCounter(),
-    token: request.user.jwtData
+    // jwt_payload: request.user.payload
   });
 });
 
