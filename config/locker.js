@@ -24,7 +24,7 @@ let data = {
     },
     lock: (obj) => {
         obj['iat'] = common.time();
-        obj['exp'] = common.time() + (60*60);
+        obj['exp'] = common.time() + (60*60*12);
         return jwt.sign(obj, cert);
     }
 };
