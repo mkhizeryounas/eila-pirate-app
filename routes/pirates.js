@@ -22,7 +22,6 @@ passport.use(new JwtStrategy(opts, (req, jwt_payload, done) => {
   }
   else {
     err = {
-      "successMessage": "OK",
       message: "Unauthorized",
       status: false
     }
