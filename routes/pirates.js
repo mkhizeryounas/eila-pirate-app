@@ -2,38 +2,24 @@ var express = require('express');
 var router = express.Router();
 const common = require('../config/common');
 const mongo = require('../config/mongo');
-
-var passport = require('passport'),
-    JwtStrategy = require('passport-jwt').Strategy,
-    ExtractJwt = require('passport-jwt').ExtractJwt;
-
-var opts = {
-  jwtFromRequest : ExtractJwt.fromAuthHeaderWithScheme('bearer'),
-  secretOrKey : 'secret-top-secret',
-}
-
-passport.use(new JwtStrategy(opts, (jwt_payload, done) => {
-  common.msg(jwt_payload)
-  if(common.time() <= jwt_payload.exp) {
-    return done(null, {
-      status: true,
-      payload: jwt_payload
-    });
-  }
-  else {
-    err = {
-      message: "Unauthorized",
-      status: false
-    }
-    return done(null, false, err);
-  }
-}));
+const locker = require('../config/locker');
 
 
-router.get('/countPirates', passport.authenticate('jwt', { session: false }), (request, response) => {
+
+
+router.get('/countPirates', locker.unlock, (request, response) => {
   response.json({
     piratesFound: pirateCounter(),
-    // jwt_payload: request.user.payload
+    jwt_payload: request.user
+  });
+});
+
+
+router.get('/token', (request, response) => {
+  response.json({
+    token: locker.lock({
+      username: 'mkhizeryounas'
+    })
   });
 });
 
