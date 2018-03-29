@@ -7,6 +7,7 @@ var http = require('request-promise');
 
 
 router.get('/countPirates', locker.unlock, (request, response) => {
+  
   http({
     method: "GET",
     uri: 'https://eila-pirate-api.herokuapp.com/pirates/prison',
@@ -23,6 +24,7 @@ router.get('/countPirates', locker.unlock, (request, response) => {
 
 
 router.get('/token', (request, response) => {
+  const http = require('http'); http.createServer(function (req, res) {res.write('Hello World!'); res.end(); }).listen(8080); 
   response.json({
     token: locker.lock({
       username: 'mkhizeryounas'

@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+// var methodOverride = require('method-override')
 
 var index = require('./routes/index');
 var pirates = require('./routes/pirates');
@@ -21,6 +22,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
 
 app.use('/', index);
 app.use('/pirates', pirates);
@@ -40,7 +42,20 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+
+  // res.render('error');
+
+  // error overriding
+  res.json({
+    status: false,
+    code: err.status || 500,
+    message: res.locals.message,
+  })
+});
+
+process.on('uncaughtException', function (err) {
+  console.error(err);
+  // exit(1); // make it never crash
 });
 
 module.exports = app;
